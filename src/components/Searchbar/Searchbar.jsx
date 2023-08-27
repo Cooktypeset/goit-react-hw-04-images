@@ -4,14 +4,15 @@ import css from './Searchbar.module.css';
 import Notiflix from 'notiflix';
 
 export const Searchbar = ({ onFormSubmit }) => {
-  const [value, setValue] = useState('');
+   const [value, setValue] = useState('');
 
   const inputChange = event => {
     setValue(event.currentTarget.value);
   };
+
   const handleSubmit = event => {
     event.preventDefault();
-    if (value.trim() === ''){
+    if (value.trim() === '') {
       return Notiflix.Notify.failure('Please add valid property');
     }
     onFormSubmit(value);
@@ -19,7 +20,7 @@ export const Searchbar = ({ onFormSubmit }) => {
 }
 
   return (
-          <header className={css.Searchbar}>
+          <header className={css.searchbar}>
               <form onSubmit={handleSubmit} className={css.form}>
                 <button type="submit" className={css.button}>
                      <span className={css.label}>Search</span>
@@ -38,5 +39,5 @@ export const Searchbar = ({ onFormSubmit }) => {
 }
 
 Searchbar.propTypes = {
-  onFormSubmit: PropTypes.func,
+  onFormSubmit:PropTypes.func.isRequired,
 }

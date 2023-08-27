@@ -1,90 +1,89 @@
-import React, { Component } from 'react';
+import  { useState, useEffect } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { fetchImages } from '../services/fetch'
 import { ImageGallery } from './ImageGallary/ImageGallery';
 import { Modal } from './Modal/Modal';
 import  { Loader }  from './Loader/Loader';
 import { Button } from './Button/Button';
+import Notiflix from 'notiflix';
 
 
-export class App extends Component {
-  state = {
-    images: [],
-    searchImage: '',
-    page: 1,
-    isLoading: false,
-    isModal: false,
-    currentLargeImg: null,
-    allImages: null,
-  }
+export const App= () => {
+  const [images, setHits] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const [totalHits, setTotalHits] = useState(0);
+  const [modalPic, setModalPic] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
-  componentDidUpdate(_, prevState) {
-   const { searchImage, page } = this.state;
-if(page !== prevState.page || searchImage!== prevState.searchImage ){
-  this.getImages(searchImage, page)
+  useEffect(() => {
+    if (page || query) {
+      setIsLoading(true);
+      fetchImages(query, page)
+        .then(response => {
+          if (response.images.length === 0) {
+            return Notiflix.Notify.failure('Please add valid property');
+          }
+          setHits(prev => [...prev, ...response.images]);
+          setTotalHits(response.totalHits);
+        })
+        .catch(error => {
+          Notiflix.Notify.failure(error.message);
+        })
+        .finally(() => setIsLoading(false));
     }
-  };
-  
-  getImages = (text, page) => {
-    this.setState({ isLoading: true })
+  }, [query, page]);
 
-    fetchImages(text, page).then(({ data }) => {
-      const allImages = data.totalHits
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits]
-      }));
-      if (allImages !== this.state.allImages) {
-        this.setState({allImages})
-      }
-    }).catch(error => {
-      throw new Error(error)
-    }).finally(() => {
-      this.setState({ isLoading: false })
-    })
-  };
-  openModal = (src, alt) => {
-    this.setState(state => ({
-      ...state, currentLargeImg: { src, alt }
-    }))
-  };
-  closeModal = (e) => {
-    this.setState({currentLargeImg: null})
-  }
-  onSubmit = (searchImage) => {
-    if (searchImage === '') {
-      return alert ('Enter the search value')
-    }
-    if (searchImage === this.state.searchImage) {
+  const hendleSubmit = data => {
+    if (data === query) {
+      return Notiflix.Notify.failure(
+        'You already got information by this request'
+      );
+    } else if (data !== query) {
+      setHits([]);
+      setPage(1);
+      setQuery(data);
       return;
     }
-    this.setState({
-      images: [],
-      searchImage,
-      page: 1,
-    });
   };
-  loadMore = () => {
-    const { page } = this.state
-    this.setState({ page: page + 1 })
+
+  const handleOverlayClick= () => {
+    setPage(prev => prev + 1);
   };
-  render() {
-    const {images, currentLargeImg, isLoading, allImages} = this.state
-    return (
-      <>
-        <Searchbar onSubmit={this.onSubmit} />
+  const hendleModalClose = () => {
+    setShowModal(false);
+    setModalPic('');
+  };
+  const hendleModalOpen = data => {
+    setModalPic(data);
+    setShowModal(true);
+}
+  const loadMoreTotal = () => page < Math.ceil(totalHits / 12);
+  const buttonCheck = loadMoreTotal();
+
+  return (
+    <>
+        <Searchbar  onFormSubmit={hendleSubmit} />
+      {isLoading && <Loader />}
+      
+      {images.length > 0 && (
+        <ImageGallery images={images} openModal={hendleModalOpen} />
         
-        {images.length > 0 &&
+      )}
           
-          <ImageGallery images={images} openModal={this.openModal} />
-        }
-          {images.length < allImages &&
-          <Button loadMore={this.loadMore} />
-          } 
-        {isLoading && <Loader />}
+         
+      {images.length < 0 && buttonCheck  && !isLoading && (
+        <Button loadMore={handleOverlayClick} />
+          )}
         
-        {currentLargeImg && <Modal imgLarge={currentLargeImg} closeModal={this.closeModal} />}
+        {showModal && <Modal imgLarge={modalPic} closeModal={hendleModalClose} />}
         
       </>
-    )
+  );
   }
-}
+
+  
+  
+ 
+   
