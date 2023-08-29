@@ -1,15 +1,16 @@
-import  { useState, useEffect } from 'react';
-import { Searchbar } from './Searchbar/Searchbar';
-import { fetchImages } from '../services/fetch'
-import { ImageGallery } from './ImageGallary/ImageGallery';
-import { Modal } from './Modal/Modal';
-import  { Loader }  from './Loader/Loader';
+import { useState, useEffect } from 'react';
+import Searchbar from './Searchbar/Searchbar';
+import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
+import { Loader } from './Loader/Loader';
+import { Modal } from './Modal/Modal';
+
+import getInfoFromApi from './GetUsersAPI/getUser';
 import Notiflix from 'notiflix';
+import css from './App.module.css';
 
-
-export const App= () => {
-  const [images, setHits] = useState([]);
+export const App = () => {
+  const [hits, setHits] = useState([]);
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
   const [totalHits, setTotalHits] = useState(0);
@@ -20,12 +21,12 @@ export const App= () => {
   useEffect(() => {
     if (page || query) {
       setIsLoading(true);
-      fetchImages(query, page)
+      getInfoFromApi(query, page)
         .then(response => {
-          if (response.images.length === 0) {
+          if (response.hits.length === 0) {
             return Notiflix.Notify.failure('Please add valid property');
           }
-          setHits(prev => [...prev, ...response.images]);
+          setHits(prev => [...prev, ...response.hits]);
           setTotalHits(response.totalHits);
         })
         .catch(error => {
@@ -48,40 +49,35 @@ export const App= () => {
     }
   };
 
-  const handleOverlayClick= () => {
+  const hendleClick = () => {
     setPage(prev => prev + 1);
   };
   const hendleModalClose = () => {
     setShowModal(false);
     setModalPic('');
   };
+
   const hendleModalOpen = data => {
     setModalPic(data);
     setShowModal(true);
-}
+  };
+
   const loadMoreTotal = () => page < Math.ceil(totalHits / 12);
   const buttonCheck = loadMoreTotal();
-
   return (
-    <>
-        <Searchbar  onFormSubmit={hendleSubmit} />
+    <div className={css.App}>
+      <Searchbar onSubmit={hendleSubmit} />
       {isLoading && <Loader />}
-      
-      {images.length > 0 && (
-        <ImageGallery images={images} openModal={hendleModalOpen} />
-        
+      {hits.length > 0 && (
+        <ImageGallery hits={hits} onClick={hendleModalOpen} />
       )}
-          
-         
-      {images.length < 0 && buttonCheck  && !isLoading && (
-        <Button loadMore={handleOverlayClick} />
-          )}
-        
-        {showModal && <Modal imgLarge={modalPic} closeModal={hendleModalClose} />}
-        
-      </>
+      {hits.length > 0 && buttonCheck && !isLoading && (
+        <Button onClick={hendleClick} />
+      )}
+      {showModal && <Modal pic={modalPic} onClose={hendleModalClose} />}
+    </div>
   );
-  }
+};
 
   
   

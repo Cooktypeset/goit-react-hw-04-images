@@ -1,19 +1,19 @@
-import React from 'react';
-import { Circles } from 'react-loader-spinner';
+import { Rings } from 'react-loader-spinner';
 import css from './Loader.module.css';
 
 export const Loader = () => {
-    return (
-        <div className={css.spinner}>
-            <Circles
-                height="80"
-                width="80"
-                color="#4fa94d"
-                arialabel="circles-loading"
-                wrapperStyle={{}}
-                wrapperClass=""
-                visible = {true}
-            />
-       </div>
-   ) 
-}
+  return (
+    <div className={css.loader}>
+      <Rings
+        height="100"
+        width="100"
+        color="#3f51b5"
+        radius="6"
+        wrapperStyle={{}}
+        wrapperClass=""
+        visible={true}
+        ariaLabel="rings-loading"
+      />
+    </div>
+  );
+};

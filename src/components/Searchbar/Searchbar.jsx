@@ -1,43 +1,46 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import css from './Searchbar.module.css';
 import Notiflix from 'notiflix';
+import css from './Searchbar.module.css';
 
-export const Searchbar = ({ onFormSubmit }) => {
-   const [value, setValue] = useState('');
+const Searchbar = ({ onSubmit }) => {
+  const [value, setValue] = useState('');
 
-  const inputChange = event => {
+  const handleChange = event => {
     setValue(event.currentTarget.value);
   };
 
-  const handleSubmit = event => {
+  const handleSubmite = event => {
     event.preventDefault();
     if (value.trim() === '') {
       return Notiflix.Notify.failure('Please add valid property');
     }
-    onFormSubmit(value);
+    onSubmit(value);
     setValue('');
-}
-
+  };
   return (
-          <header className={css.searchbar}>
-              <form onSubmit={handleSubmit} className={css.form}>
-                <button type="submit" className={css.button}>
-                     <span className={css.label}>Search</span>
-                </button>
-                  <input
-                    onChange={inputChange}
-                    className={css.input}
-                    value = {value}
-                    type="text"
-                    placeholder="Search images and photos"
-                />
-            </form>
-          </header>
+    <header className={css.Searchbar}>
+      <form onSubmit={handleSubmite} className={css.SearchForm}>
+        <button type="submit" className={css.SearchForm_button}>
+          <span className={css.SearchForm_button_label}>Search</span>
+        </button>
 
-  )
-}
+        <input
+          className={css.SearchForm_input}
+          onChange={handleChange}
+          value={value}
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+        />
+      </form>
+    </header>
+  );
+};
 
 Searchbar.propTypes = {
-  onFormSubmit:PropTypes.func.isRequired,
-}
+  onSubmit: PropTypes.func.isRequired,
+};
+
+export default Searchbar;
